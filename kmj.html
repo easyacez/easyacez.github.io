@@ -218,9 +218,6 @@ function sumRevenue(result) {
     result["二、营运情况"]["本月营业额累计"] += getValue("add_yinyee");
     result["二、营运情况"]["本月营业额达标率"] = result["二、营运情况"]["本月营业额累计"] / result["二、营运情况"]["本月营业额目标"] * 100;
     result["三、食神卡"]["今日季卡.本月累计"] += result["三、食神卡"]["今日季卡"];
-    console.log(result["三、食神卡"]["今日季卡.累计"])
-    console.log(result["三、食神卡"]["今日季卡"])
-    console.log(result["三、食神卡"]["今日季卡"] * 29.9)
     result["三、食神卡"]["今日季卡.累计"] += result["三、食神卡"]["今日季卡"] * 29.9;
     result["三、食神卡"]["今日年卡.本月累计"] += result["三、食神卡"]["今日年卡"];
     result["三、食神卡"]["今日年卡.累计"] += result["三、食神卡"]["今日年卡"] * 99.9;
@@ -267,18 +264,20 @@ function printKV(data, name, tail) {
 function printWeijie(data, name) {
     var html = "";
     var date = new Date();
+    var total = 0;
     var month = date.getMonth();
     for (var i = 0; i < 12; i++) {
         var n = (date.getMonth() + 1) + "月" + name;
         if (i == 0 || n in data) {
             html = printKV(data, n) + html;
+            total += data[n];
         } else {
             break;
         }
         month -= 1;
         date.setMonth(month);
     }
-    return html;
+    return html.replace(/\n$/, "，合计: " + total + "元\n");
 }
 
 function printRevenue(result) {
@@ -318,7 +317,7 @@ function printRevenue(result) {
     html += printKV(data, "本月营业额达标率", "%");
 
     data = result["三、食神卡"];
-    html += printKV(data, "三、食神卡");
+    html += printKV(null, "三、食神卡");
     html += printKV(data, "今日季卡", "张，本月累计" + data["今日季卡.本月累计"] + "张，累计：" + data["今日季卡.累计"] + "元");
     html += printKV(data, "今日年卡", "张，本月累计" + data["今日年卡.本月累计"] + "张，累计：" + data["今日年卡.累计"] + "元");
     html += printKV(data, "本月食神卡累计");
@@ -341,7 +340,7 @@ function printAccount(result) {
     html += printKV(data, today);
 
     data = result["一、收入明细"];
-    html += printKV(data, "一、收入明细");
+    html += printKV(null, "一、收入明细");
     html += printKV(data, "营业额", "（元含中餐0元）");
     html += printKV(data, "现金收入");
     html += printKV(data, "支付宝扫码");
@@ -358,7 +357,7 @@ function printAccount(result) {
     html += printKV(data, "云闪付");
 
     data = result["二、开支明细"];
-    html += printKV(data, "二、开支明细");
+    html += printKV(null, "二、开支明细");
     html += printKV(data, "现在开支");
     html += printKV(null, "现金:员工" + data["现金.员工"] + "人餐费" + data["现金.餐费"] + "元");
     html += printKV(null, "合计:" + data["现金.合计"] + "元");
@@ -368,7 +367,7 @@ function printAccount(result) {
     html += printKV(null, "合计: " + data["其它.合计"]);
 
     data = result["三、账目明细"];
-    html += printKV(data, "三、账目明细");
+    html += printKV(null, "三、账目明细");
     html += printKV(data, "实际存行");
     html += printKV(data, "未存行:元");
     html += printKV(data, "备用金额");
