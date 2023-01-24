@@ -98,7 +98,7 @@ var lastAccount = `1月19日账本余额49992.06元
 祝:生意兴隆！`
 
 function parseReport(result, report) {
-    var reportLines = report.replace("：", ":").split("\n");
+    var reportLines = report.replace(/：/g, ":").split("\n");
     var kv = null;
     var titleReg = /[一二三四五六七八九十]、.+/;
     var kvReg = /([^:]+): ?([\d\.]+)/;
@@ -116,15 +116,17 @@ function parseReport(result, report) {
             result[text] = {};
             kv = result[text];
         } else if (kv != null){
-            console.log(headReg.exec(text))
-            if (headReg.test(text)) {
-                var k = RegExp.$1;
+            var heads = headReg.exec(text);
+            console.log(heads)
+            if (heads != null) {
+                var k = heads[1];
                 if (k in kv) {
                     k += repeat;
                     repeat += 1;
                 }
-                kv[k] = parseFloatNoNaN(RegExp.$2);
-                var arr = text.match(tailReg);
+                kv[k] = parseFloatNoNaN(heads[2]);
+                console.log(text.substr(heads.index))
+                var arr = text.substr(heads.index).match(tailReg);
                 for (var j in arr) {
                     console.log(arr[j])
                     if (kvReg.test(arr[j])) {
@@ -211,13 +213,16 @@ function sumRevenue(result) {
     result["二、营运情况"]["本月营业额累计"] += getValue("add_yinyee");
     result["二、营运情况"]["本月营业额达标率"] = result["二、营运情况"]["本月营业额累计"] / result["二、营运情况"]["本月营业额目标"] * 100;
     result["三、食神卡"]["今日季卡.本月累计"] += result["三、食神卡"]["今日季卡"];
+    console.log(result["三、食神卡"]["今日季卡.累计"])
+    console.log(result["三、食神卡"]["今日季卡"])
+    console.log(result["三、食神卡"]["今日季卡"] * 29.9)
     result["三、食神卡"]["今日季卡.累计"] += result["三、食神卡"]["今日季卡"] * 29.9;
     result["三、食神卡"]["今日年卡.本月累计"] += result["三、食神卡"]["今日年卡"];
     result["三、食神卡"]["今日年卡.累计"] += result["三、食神卡"]["今日年卡"] * 99.9;
     result["三、食神卡"]["本月食神卡累计"] += result["三、食神卡"]["今日年卡"] * 99.9;
     result["三、食神卡"]["本月食神卡达成率"] = result["三、食神卡"]["本月食神卡达成率"] / result["三、食神卡"]["本月食神卡目标"] * 100;
     result["三、账目明细"]["实际存行"] = result["一、收入明细"]["现金收入"];
-    result["三、账目明细"]["备用金额"] -= del_xianjing + result["二、开支明细"]["其它"];
+    result["三、账目明细"]["备用金额"] -= (del_xianjing + result["二、开支明细"]["其它"]);
 
     addResult(result, "三、账目明细", month + "月未结微信支付", result["一、收入明细"]["微信支付"]);
     addResult(result, "三、账目明细", month + "月未结支付宝", result["一、收入明细"]["支付宝"]);
@@ -310,8 +315,7 @@ function printRevenue(result) {
     data = result["三、食神卡"];
     html += printKV(data, "三、食神卡");
     html += printKV(data, "今日季卡", "张，本月累计" + data["今日季卡.本月累计"] + "张，累计：" + data["今日季卡.累计"] + "元");
-    html += printKV(data, "今日年卡", "张");
-    html += printKV(data, "本月累计", "张，累计:" + data["本月累计.累计"] + "张");
+    html += printKV(data, "今日年卡", "张，本月累计" + data["今日年卡.本月累计"] + "张，累计：" + data["今日年卡.累计"] + "元");
     html += printKV(data, "本月食神卡累计");
     html += printKV(data, "本月食神卡目标");
     html += printKV(data, "本月食神卡达成率", "%");
@@ -387,8 +391,8 @@ function printAccount(result) {
 
 window.onload = function (){
     // for test
-    //document.getElementById("old_revenue").value = lastRevenue;
-    //document.getElementById("old_account").value = lastAccount;
+    document.getElementById("old_revenue").value = lastRevenue;
+    document.getElementById("old_account").value = lastAccount;
 
     var btn = document.getElementById("gen_btn");
     btn.onclick = function (){
@@ -399,10 +403,8 @@ window.onload = function (){
         roundResult(result);
         var revEl = document.getElementById("new_revenue")
         revEl.value = printRevenue(result);
-        console.log(revEl.innerHTML)
         var accEl = document.getElementById("new_account")
         accEl.value = printAccount(result);
-        console.log(accEl)
     };
 }
 </script>
@@ -440,7 +442,7 @@ window.onload = function (){
 
 <fieldset id="del_xx">
     <legend>现在开支</legend>
-    现金: 员工<input value="" id="employee_num"/>人餐费<input value="" id="del_meal_charge"/>元<br>
+    现金: 员工<input value="7" id="employee_num"/>人餐费<input value="" id="del_meal_charge"/>元<br>
     卡支: <input value="" id="del_kazhi"/>元<br>
     其它收入: <input value="" id="del_qita"/>元。<br>
 </fieldset>
