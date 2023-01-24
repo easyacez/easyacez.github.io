@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <title>记账</title>
 <script>
-var Num2Text = {1: "一", 2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 7: "七", 8: "八", 9: "九"};
 var lastRevenue = `新年好，下六肯麦基
 1月23日（星期一）
 一、收入明细
@@ -122,7 +121,6 @@ function parseReport(result, report) {
             kv = result[text];
         } else if (kv != null){
             var heads = headReg.exec(text);
-            console.log(heads)
             if (heads != null) {
                 var k = heads[1];
                 if (k in kv) {
@@ -130,10 +128,8 @@ function parseReport(result, report) {
                     repeat += 1;
                 }
                 kv[k] = parseFloatNoNaN(heads[2]);
-                console.log(text.substr(heads.index))
-                var arr = text.substr(heads.index).match(tailReg);
+                var arr = text.substr(heads[0].length).match(tailReg);
                 for (var j in arr) {
-                    console.log(arr[j])
                     if (kvReg.test(arr[j])) {
                         kv[k + "." + RegExp.$1] = parseFloatNoNaN(RegExp.$2);
                     }
@@ -280,11 +276,20 @@ function printWeijie(data, name) {
     return html.replace(/\n$/, "，合计: " + total + "元\n");
 }
 
+function getDateStr(date, withWeek) {
+    var Num2Text = {1: "一", 2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 7: "七", 8: "八", 9: "九"};
+    if (withWeek) {
+        return (date.getMonth() + 1) + "月" + date.getDate() + "日（星期" + Num2Text[date.getDay() + 1] + "）";
+    } else {
+        return (date.getMonth() + 1) + "月" + date.getDate() + "日";
+    }
+}
+
 function printRevenue(result) {
-    var date = new Date();
     var html = "";
+    var date = new Date();
     html += printKV(null, "新年好，下六肯麦基");
-    html += printKV(null, date.getMonth() + "月" + date.getDate() + "日（星期" + Num2Text[date.getDay() + 1] + "）");
+    html += printKV(null, getDateStr(date, true));
 
     data = result["一、收入明细"];
     html += printKV(null, "一、收入明细");
@@ -333,9 +338,9 @@ function printAccount(result) {
     var date = new Date();
     var month = date.getMonth() + 1;
     var lastMonth = (month == 1 ? 12 : month - 1);
-    var today = (date.getMonth() + 1) + "月" + date.getDate() + "日（星期" + Num2Text[date.getDay() + 1] + "）";
+    var today = getDateStr(date, true);
     date.setDate(date.getDate() - 1);
-    var yesteday = (date.getMonth() + 1) + "月" + date.getDate() + "日";
+    var yesteday = getDateStr(date);
     html += printKV(data, yesteday + "账本余额" + result["三、账目明细"]["昨日帐本余额"] + "元");
     html += printKV(data, today);
 
