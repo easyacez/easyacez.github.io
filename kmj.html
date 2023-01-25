@@ -114,6 +114,7 @@ var lastDate = null;
 var thisDate = null;
 var greetMsg = "下六肯麦基"
 function parseReport(result, report) {
+    //格式修正
     report = report.replace(/帐目明细/g, "账目明细")
         .replace(/月份未结/g, "月未结")
         .replace(/：/g, ":")
@@ -451,13 +452,13 @@ window.onload = function (){
         <div class="form-group">
             <label for="old_revenue" class="col-sm-2 control-label">昨日收支报告</label>
             <div class="col-sm-10">
-                <textarea class="form-control" id="old_revenue" rows="3" cols="80"></textarea>
+                <textarea class="form-control" id="old_revenue" rows="3" cols="40"></textarea>
             </div>
         </div>
         <div class="form-group">
             <label for="old_account" class="col-sm-2 control-label">昨日记账报告</label>
             <div class="col-sm-10">
-                <textarea class="form-control" id="old_account" rows="3" cols="80"></textarea>
+                <textarea class="form-control" id="old_account" rows="3" cols="40"></textarea>
             </div>
         </div>
     </fieldset>
@@ -598,13 +599,13 @@ window.onload = function (){
         <div class="form-group">
             <label for="new_revenue" class="col-sm-2 control-label">收支报告</label>
             <div class="col-sm-10">
-                <textarea class="form-control" id="new_revenue" rows="35" cols="80"></textarea>
+                <textarea class="form-control" id="new_revenue" rows="35" cols="40"></textarea>
             </div>
         </div>
         <div class="form-group">
             <label for="new_account" class="col-sm-2 control-label">记账报告</label>
             <div class="col-sm-10">
-                <textarea class="form-control" id="new_account" rows="55" cols="80"></textarea>
+                <textarea class="form-control" id="new_account" rows="55" cols="40"></textarea>
             </div>
         </div>
     </fieldset>
