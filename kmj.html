@@ -112,6 +112,7 @@ var lastAccount = `1月22日账本余额60489.03元
 
 var lastDate = null;
 var thisDate = null;
+var greetMsg = "下六肯麦基"
 function parseReport(result, report) {
     report = report.replace(/帐目明细/g, "账目明细")
         .replace(/月份未结/g, "月未结")
@@ -126,6 +127,7 @@ function parseReport(result, report) {
     console.log(report);
     var reportLines = report.split("\n");
     var kv = null;
+    var greetReg = /.*肯麦基/;
     var dateReg = /(\d+)月(\d+)日.*星期/;
     var titleReg = /[一二三四五六七八九十]、.+/;
     var kvReg = /([^:]+):([\d\.]*)/;
@@ -134,7 +136,9 @@ function parseReport(result, report) {
     var repeat = 0;
     for (var i in reportLines) {
         var text = reportLines[i];
-        if (dateReg.test(text)) {
+        if (greetReg.test(text)) {
+            greetMsg = text;
+        } else if (dateReg.test(text)) {
             var month = parseInt(RegExp.$1) - 1;
             var date = RegExp.$2;
             lastDate = new Date();
@@ -304,9 +308,9 @@ function printWeijie(data, name) {
 }
 
 function getDateStr(date, withWeek) {
-    var Num2Text = {1: "一", 2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 7: "七", 8: "八", 9: "九"};
+    var Num2Text = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
     if (withWeek) {
-        return (date.getMonth() + 1) + "月" + date.getDate() + "日（星期" + Num2Text[date.getDay() + 1] + "）";
+        return (date.getMonth() + 1) + "月" + date.getDate() + "日（" + Num2Text[date.getDay()] + "）";
     } else {
         return (date.getMonth() + 1) + "月" + date.getDate() + "日";
     }
@@ -314,7 +318,7 @@ function getDateStr(date, withWeek) {
 
 function printRevenue(result) {
     var html = "";
-    html += printKV(null, "新年好，下六肯麦基");
+    html += printKV(null, greetMsg);
     html += printKV(null, getDateStr(thisDate, true));
 
     data = result["一、收入明细"];
@@ -354,7 +358,7 @@ function printRevenue(result) {
     html += printKV(data, "本月食神卡累计");
     html += printKV(data, "本月食神卡目标");
     html += printKV(data, "本月食神卡达成率", "%");
-    html += printKV(null, "祝：生意兴隆!");
+    html += printKV(null, "祝：生意兴隆！");
     return html;
 }
 
