@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <title>记账</title>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+
+<!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+
 <script>
 var lastRevenue = `新年好，下六肯麦基
 1月23日（星期一）
@@ -38,8 +46,9 @@ AC：42.49元
 本月营业额目标:92000元
 本月营业额达标率：69.23%
 三、食神卡
-今日季卡:0张，本月累计:2张，累计：59.8元
-今日年卡:0张， 本月累计:70张，累计:70张
+今日季卡0张，本月累计2张，累计：59.8元
+今日年卡张
+本月累计70张，累计:70张
 本月食神卡累计:7052.8元
 本月食神卡目标:10000元
 本月食神卡达成率:70.52%
@@ -70,7 +79,7 @@ var lastAccount = `1月22日账本余额60489.03元
 合计:
 其它收入：元。
 合计
-三、账目明细
+三、帐目明细
 实际存行:816.2元（多收元）
 未存行:元
 备用金额:2923.9元
@@ -78,16 +87,16 @@ var lastAccount = `1月22日账本余额60489.03元
 1月未结微信支付:41004.3元，合计:41004.3元
 12月未结支付宝:0元
 1月未结支付宝:4360.5元，合计:4360.5元
-11月未结支付宝小程序:元
-12月未结支付宝小程序:元
+11月份未结支付宝小程序:元
+12月份未结支付宝小程序:元
 12月末结小微会员支付：0元
 1月末结小微会员支付：117.9元，合计：117.9元
-11月未结云闪付：0元
-12月未结云闪付:0元，合计：0元
-12月未结微信扫码支付：0元
-1月未结微信扫码支付:1217.55元，合计:1217.55元
-12月未结闪速外卖：元
-1月未结闪速外卖:3691.94元，合计:3691.94元
+11月份未结云闪付：0元
+12月份未结云闪付:0元，合计：0元
+12月份未结微信扫码支付：0元
+1月份未结微信扫码支付:1217.55元，合计:1217.55元
+12月份未结闪速外卖：元
+1月份未结闪速外卖:3691.94元，合计:3691.94元
 11月末结饿了么:元
 12月未结饿了么：元，合计：元
 12月未结抖音收入：0元
@@ -97,20 +106,47 @@ var lastAccount = `1月22日账本余额60489.03元
 银行余额:9551.64元
 帐本余额:65464.27元（不包含1月食神卡7052.8元，合计:7052.8元）
 截止12月底欠货款合计:40358.5元(含12月份管理费元）
-1月进货:42692 元
+1月进货42692 元
 占1月累计营业（63699.23元）为67.02%
 祝:生意兴隆！`
 
+var lastDate = null;
+var thisDate = null;
 function parseReport(result, report) {
-    var reportLines = report.replace(/：/g, ":").split("\n");
+    report = report.replace(/帐目明细/g, "账目明细")
+        .replace(/月份未结/g, "月未结")
+        .replace(/：/g, ":")
+        .replace(/\n本月累计/, "，本月累计")
+        .replace("今日季卡", "今日季卡:")
+        .replace("今日年卡", "今日年卡:")
+        .replace(/本月累计/g, "本月累计:")
+        .replace(/月进货/g, "月进货:")
+        .replace(/::/g, ":")
+        .replace(/: /g, ":");
+    console.log(report);
+    var reportLines = report.split("\n");
     var kv = null;
+    var dateReg = /(\d+)月(\d+)日.*星期/;
     var titleReg = /[一二三四五六七八九十]、.+/;
-    var kvReg = /([^:]+): ?([\d\.]+)/;
-    var headReg = /^([^:]+): ?([\d\.]+)/;
-    var tailReg = /(本月累计|累计|合计): ?([\d\.]+)/g;
+    var kvReg = /([^:]+):([\d\.]*)/;
+    var headReg = /^([^:]+):([\d\.]*)/;
+    var tailReg = /(本月累计|累计|合计):([\d\.]*)/g;
     var repeat = 0;
     for (var i in reportLines) {
         var text = reportLines[i];
+        if (dateReg.test(text)) {
+            var month = parseInt(RegExp.$1) - 1;
+            var date = RegExp.$2;
+            lastDate = new Date();
+            if (month > lastDate.getMonth()) {
+                lastDate.setFullYear(lastDate.getFullYear() - 1);
+            }
+            lastDate.setMonth(month);
+            lastDate.setDate(date);
+            thisDate = new Date();
+            thisDate.setTime(lastDate.getTime());
+            thisDate.setDate(thisDate.getDate() + 1);
+        }
         if (titleReg.test(text)) {
             //if (text in result) {
             //    text += repeat;
@@ -139,8 +175,8 @@ function parseReport(result, report) {
     }
     console.log(result);
     return result;
-    //return lastReportReg.test(report);
 }
+
 function addResult(result, title, name, value) {
     if (!(title in result)) {
         result[title] = {};
@@ -160,6 +196,7 @@ function parseFloatNoNaN(value){
         return val;
     }
 }
+
 function getValue(key) {
     return parseFloatNoNaN(document.getElementById(key).value);
 }
@@ -173,15 +210,7 @@ function roundResult(result) {
 }
 
 function sumRevenue(result) {
-    var date = new Date();
-    var month = date.getMonth() + 1;
-    var add_xx = 0, del_xx = 0, shishen_xx;
-    var add_el = document.getElementById("add_xx");
-    var add_els = add_el.getElementsByTagName("input");
-    for (var i in add_els) {
-        add_xx += add_els[i].value;
-    }
-    var del_xianjing = getValue("employee_num") * getValue("del_meal_charge");
+    var month = thisDate.getMonth() + 1;
 
     result["一、收入明细"]["营业额"] = getValue("add_yinyee");
     result["一、收入明细"]["现金收入"] = getValue("add_xianjin");
@@ -214,13 +243,13 @@ function sumRevenue(result) {
     result["二、营运情况"]["本月营业额累计"] += getValue("add_yinyee");
     result["二、营运情况"]["本月营业额达标率"] = result["二、营运情况"]["本月营业额累计"] / result["二、营运情况"]["本月营业额目标"] * 100;
     result["三、食神卡"]["今日季卡.本月累计"] += result["三、食神卡"]["今日季卡"];
-    result["三、食神卡"]["今日季卡.累计"] += result["三、食神卡"]["今日季卡"] * 29.9;
+    result["三、食神卡"]["今日季卡.累计"] += result["三、食神卡"]["今日季卡"] * 29.9;  //元
     result["三、食神卡"]["今日年卡.本月累计"] += result["三、食神卡"]["今日年卡"];
-    result["三、食神卡"]["今日年卡.累计"] += result["三、食神卡"]["今日年卡"] * 99.9;
-    result["三、食神卡"]["本月食神卡累计"] += result["三、食神卡"]["今日年卡"] * 99.9;
-    result["三、食神卡"]["本月食神卡达成率"] = result["三、食神卡"]["本月食神卡达成率"] / result["三、食神卡"]["本月食神卡目标"] * 100;
+    result["三、食神卡"]["今日年卡.累计"] += result["三、食神卡"]["今日年卡"];  //张
+    result["三、食神卡"]["本月食神卡累计"] = result["三、食神卡"]["今日季卡.本月累计"] * 29.9 + result["三、食神卡"]["今日年卡.本月累计"] * 99.9;
+    result["三、食神卡"]["本月食神卡达成率"] = result["三、食神卡"]["本月食神卡累计"] / result["三、食神卡"]["本月食神卡目标"] * 100;
     result["三、账目明细"]["实际存行"] = result["一、收入明细"]["现金收入"];
-    result["三、账目明细"]["备用金额"] -= (del_xianjing + result["二、开支明细"]["其它"]);
+    result["三、账目明细"]["备用金额"] -= (result["二、开支明细"]["现金.合计"] + result["二、开支明细"]["其它"]);
 
     addResult(result, "三、账目明细", month + "月未结微信支付", result["一、收入明细"]["微信支付"]);
     addResult(result, "三、账目明细", month + "月未结支付宝", result["一、收入明细"]["支付宝"]);
@@ -235,9 +264,9 @@ function sumRevenue(result) {
     addResult(result, "三、账目明细", month + "月末结跑腿快车", result["一、收入明细"]["跑腿快车"]);
     addResult(result, "三、账目明细", month + "月末结新美大", result["一、收入明细"]["新美大"]);
 
-    result["三、账目明细"]["银行余额"] += result["一、收入明细"]["现金收入"] - getValue("del_kazhi");
+    result["三、账目明细"]["银行余额"] += result["一、收入明细"]["现金收入"] - result["二、开支明细"]["卡支.合计"];
     result["三、账目明细"]["昨日帐本余额"] = result["三、账目明细"]["帐本余额"];
-    result["三、账目明细"]["帐本余额"] += result["一、收入明细"]["现金收入"] - (del_xianjing + result["二、开支明细"]["其它"]);
+    result["三、账目明细"]["帐本余额"] += result["一、收入明细"]["营业额"] - result["二、开支明细"]["现金.合计"] - result["二、开支明细"]["卡支.合计"] - result["二、开支明细"]["其它.合计"];
 }
 
 function printKV(data, name, tail) {
@@ -259,19 +288,17 @@ function printKV(data, name, tail) {
 
 function printWeijie(data, name) {
     var html = "";
-    var date = new Date();
     var total = 0;
-    var month = date.getMonth();
+    var month = thisDate.getMonth() + 1;
     for (var i = 0; i < 12; i++) {
-        var n = (date.getMonth() + 1) + "月" + name;
+        var n = month + "月" + name;
         if (i == 0 || n in data) {
             html = printKV(data, n) + html;
             total += data[n];
         } else {
             break;
         }
-        month -= 1;
-        date.setMonth(month);
+        month = (month == 1 ? 12 : month - 1);
     }
     return html.replace(/\n$/, "，合计: " + total + "元\n");
 }
@@ -287,9 +314,8 @@ function getDateStr(date, withWeek) {
 
 function printRevenue(result) {
     var html = "";
-    var date = new Date();
     html += printKV(null, "新年好，下六肯麦基");
-    html += printKV(null, getDateStr(date, true));
+    html += printKV(null, getDateStr(thisDate, true));
 
     data = result["一、收入明细"];
     html += printKV(null, "一、收入明细");
@@ -324,7 +350,7 @@ function printRevenue(result) {
     data = result["三、食神卡"];
     html += printKV(null, "三、食神卡");
     html += printKV(data, "今日季卡", "张，本月累计" + data["今日季卡.本月累计"] + "张，累计：" + data["今日季卡.累计"] + "元");
-    html += printKV(data, "今日年卡", "张，本月累计" + data["今日年卡.本月累计"] + "张，累计：" + data["今日年卡.累计"] + "元");
+    html += printKV(data, "今日年卡", "张，本月累计" + data["今日年卡.本月累计"] + "张，累计：" + data["今日年卡.累计"] + "张");
     html += printKV(data, "本月食神卡累计");
     html += printKV(data, "本月食神卡目标");
     html += printKV(data, "本月食神卡达成率", "%");
@@ -335,14 +361,10 @@ function printRevenue(result) {
 function printAccount(result) {
     console.log(result)
     var html = "";
-    var date = new Date();
-    var month = date.getMonth() + 1;
+    var month = thisDate.getMonth() + 1;
     var lastMonth = (month == 1 ? 12 : month - 1);
-    var today = getDateStr(date, true);
-    date.setDate(date.getDate() - 1);
-    var yesteday = getDateStr(date);
-    html += printKV(data, yesteday + "账本余额" + result["三、账目明细"]["昨日帐本余额"] + "元");
-    html += printKV(data, today);
+    html += printKV(null, getDateStr(lastDate) + "账本余额" + result["三、账目明细"]["昨日帐本余额"] + "元");
+    html += printKV(null, getDateStr(thisDate, true));
 
     data = result["一、收入明细"];
     html += printKV(null, "一、收入明细");
@@ -363,7 +385,7 @@ function printAccount(result) {
 
     data = result["二、开支明细"];
     html += printKV(null, "二、开支明细");
-    html += printKV(data, "现在开支");
+    html += printKV(null, "现在开支");
     html += printKV(null, "现金:员工" + data["现金.员工"] + "人餐费" + data["现金.餐费"] + "元");
     html += printKV(null, "合计:" + data["现金.合计"] + "元");
     html += printKV(data, "卡支");
@@ -419,52 +441,170 @@ window.onload = function (){
 </script>
 </head>
 <body>
-<form>
-<fieldset id="old_report">
-    <legend>昨日报告</legend>
-    昨日收支报告: <textarea id="old_revenue" rows="3" cols="80"></textarea><br>
-    昨日记账报告: <textarea id="old_account" rows="3" cols="80"></textarea><br>
-</fieldset>
-<fieldset id="add_xx">
-    <legend>收入</legend>
-    营业额: <input value="" id="add_yinyee"/>元<br>
-    现金收入: <input value="" id="add_xianjin"/>元<br>
-    支付宝扫码: <input value="" id="add_zhifubaoshaoma"/>元<br>
-    新美大: <input value="" id="add_xinmeida"/>元<br>
-    微信支付: <input value="" id="add_weixin"/>元<br>
-    支付宝: <input value="" id="add_zhifubao"/>元<br>
-    小微会员支付: <input value="" id="add_xiaowei"/>元<br>
-    微信扫码支付: <input value="" id="add_weixinshaoma"/>元<br>
-    抖音出单: <input value="" id="add_douyin"/>元<br>
-    闪速外卖: <input value="" id="add_shansu"/>元<br>
-    饿了么: <input value="" id="add_eleme"/>元<br>
-    跑腿快车: <input value="" id="add_paotui"/>元<br>
-    支付宝小程序: <input value="" id="add_zhifubaoxiaochenxu"/>元<br>
-    云闪付: <input value="" id="add_yunshanfu"/>元<br>
-</fieldset>
+<form class="form-horizontal">
+    <fieldset id="old_report">
+        <legend>昨日报告</legend>
+        <div class="form-group">
+            <label for="old_revenue" class="col-sm-2 control-label">昨日收支报告</label>
+            <div class="col-sm-10">
+                <textarea class="form-control" id="old_revenue" rows="3" cols="80"></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="old_account" class="col-sm-2 control-label">昨日记账报告</label>
+            <div class="col-sm-10">
+                <textarea class="form-control" id="old_account" rows="3" cols="80"></textarea>
+            </div>
+        </div>
+    </fieldset>
+    <fieldset id="add_xx">
+        <legend>收入</legend>
+        <div class="form-group">
+            <label for="add_yinyee" class="col-sm-2 control-label">营业额</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_yinyee"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="add_xianjin" class="col-sm-2 control-label">现金收入</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_xianjin"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="add_zhifubaoshaoma" class="col-sm-2 control-label">支付宝扫码</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_zhifubaoshaoma"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="add_xinmeida" class="col-sm-2 control-label">新美大</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_xinmeida"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="add_weixin" class="col-sm-2 control-label">微信支付</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_weixin"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="add_zhifubao" class="col-sm-2 control-label">支付宝</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_zhifubao"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="add_xiaowei" class="col-sm-2 control-label">小微会员支付</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_xiaowei"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="add_weixinshaoma" class="col-sm-2 control-label">微信扫码支付</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_weixinshaoma"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="add_douyin" class="col-sm-2 control-label">抖音出单</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_douyin"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="add_shansu" class="col-sm-2 control-label">闪速外卖</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_shansu"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="add_eleme" class="col-sm-2 control-label">饿了么</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_eleme"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="add_paotui" class="col-sm-2 control-label">跑腿快车</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_paotui"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="add_zhifubaoxiaochenxu" class="col-sm-2 control-label">支付宝小程序</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_zhifubaoxiaochenxu"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="add_yunshanfu" class="col-sm-2 control-label">云闪付</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="add_yunshanfu"/>
+            </div>
+        </div>
+    </fieldset>
 
-<fieldset id="shishen_xx">
-    <legend>食神卡</legend>
-    今日季卡: <input value="" id="shishen_jika"/>张<br>
-    今日年卡: <input value="" id="shishen_nianka"/>张<br>
-</fieldset>
+    <fieldset id="shishen_xx">
+        <legend>食神卡</legend>
+        <div class="form-group">
+            <label for="shishen_jika" class="col-sm-2 control-label">今日季卡</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="张" value="" id="shishen_jika"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="shishen_nianka" class="col-sm-2 control-label">今日年卡</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="张" value="" id="shishen_nianka"/>
+            </div>
+        </div>
+    </fieldset>
 
-<fieldset id="del_xx">
-    <legend>现在开支</legend>
-    现金: 员工<input value="7" id="employee_num"/>人餐费<input value="" id="del_meal_charge"/>元<br>
-    卡支: <input value="" id="del_kazhi"/>元<br>
-    其它收入: <input value="" id="del_qita"/>元。<br>
-</fieldset>
+    <fieldset id="del_xx">
+        <legend>开支</legend>
+        <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">现金</label>
+            <div class="col-sm-10">
+            员工<input class="form-control" placeholder="人" value="" id="employee_num"/>餐费<input class="form-control" placeholder="元" value="" id="del_meal_charge"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="del_kazhi" class="col-sm-2 control-label">卡支</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="del_kazhi"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="del_qita" class="col-sm-2 control-label">其它</label>
+            <div class="col-sm-10">
+                <input class="form-control" placeholder="元" value="" id="del_qita"/>
+            </div>
+        </div>
+    </fieldset>
 
-<fieldset>
-<button type="button" id="gen_btn">生成</button>
-</fieldset>
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button class="btn btn-primary" type="button" id="gen_btn">生成日报</button>
+        </div>
+    </div>
 
-<fieldset id="old_report">
-    <legend>昨日报告</legend>
-    收支报告: <textarea id="new_revenue" rows="35" cols="80"></textarea><br>
-    记账报告: <textarea id="new_account" rows="55" cols="80"></textarea><br>
-</fieldset>
+    <fieldset id="old_report">
+        <legend>昨日报告</legend>
+        <div class="form-group">
+            <label for="new_revenue" class="col-sm-2 control-label">收支报告</label>
+            <div class="col-sm-10">
+                <textarea class="form-control" id="new_revenue" rows="35" cols="80"></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="new_account" class="col-sm-2 control-label">记账报告</label>
+            <div class="col-sm-10">
+                <textarea class="form-control" id="new_account" rows="55" cols="80"></textarea>
+            </div>
+        </div>
+    </fieldset>
+</form>
 </body>
 </html>
 
